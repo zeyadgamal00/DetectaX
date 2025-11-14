@@ -29,6 +29,14 @@ C:.
 |       model_registry.py
 |       tracking_setup.py
 |       
++---MLops Documentation
+|       Deployment_Pipeline.md
+|       Experiment_Tracking.md
+|       Model_Registry.md
+|       Monitoring_Setup.md
+|       Retraining_Strategy.md
+|       Troubleshooting_Guide.md
+|       
 +---Monitoring
 |       alerts.py
 |       drift_detection.py
