@@ -8,7 +8,7 @@ import json
 import os
 from pathlib import Path
 
-# ===Azure Details HERE===
+# Add Azure Details
 ENDPOINT_URL = "ENDPOINT HERE"
 API_KEY = "YOUR KEY"
 
