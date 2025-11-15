@@ -1,4 +1,4 @@
-# Classification Model/train_classification_mlflow.py
+# MLflow/train_classification_mlflow_fixed.py
 import tensorflow as tf
 import tensorflow_datasets as tfds
 from tensorflow import keras
@@ -19,18 +19,18 @@ from model_registry import ModelRegistry
 
 def train_classification_with_mlflow():
     """
-    Enhanced training script for classification with MLflow tracking
+    Enhanced training script for classification with MLflow tracking using nested runs
     """
-    print("Starting Classification Training with MLflow...")
+    print("🚀 Starting Classification Training with MLflow (Nested Runs)...")
     
     # Setup MLflow
     ws = setup_mlflow_tracking()
     
-    # Start MLflow run
-    with start_experiment_run("cifar10-classification", "mobileNetV2_finetuned"):
+    # Start main parent run
+    with start_experiment_run("cifar10-classification", "mobileNetV2_complete"):
         
         # Load and prepare data
-        print("Loading CIFAR-10 dataset...")
+        print("📥 Loading CIFAR-10 dataset...")
         (train_data, val_data, test_data), data_info = tfds.load("cifar10", 
                                             split=['train[10000:]', 'train[0:10000]', 'test'],
                                             as_supervised=True, with_info=True, shuffle_files=True)
@@ -60,14 +60,9 @@ def train_classification_with_mlflow():
         val_data = val_data.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE).batch(32).prefetch(tf.data.AUTOTUNE)
         test_data = test_data.map(preprocess, num_parallel_calls=tf.data.AUTOTUNE).batch(32).prefetch(tf.data.AUTOTUNE)
 
-        # Log training parameters
+        # Log global training parameters in parent run
         training_params = {
             "batch_size": 32,
-            "epochs_phase1": 10,
-            "epochs_phase2": 20,
-            "learning_rate_phase1": 0.001,
-            "learning_rate_phase2": 0.01,
-            "optimizer": "adam",
             "base_model": "MobileNetV2",
             "dataset": "CIFAR-10",
             "fine_tune_layers": 50,
@@ -75,97 +70,139 @@ def train_classification_with_mlflow():
         }
         mlflow.log_params(training_params)
         
-        # PHASE 1: Transfer Learning with Frozen Base Model
+        # PHASE 1: Transfer Learning with Frozen Base Model (Nested Run)
         print("Phase 1: Transfer Learning (Frozen Base)")
-        mlflow.log_param("training_phase", "transfer_learning")
-        
-        # Use a pretrained base model
-        base_model = keras.applications.MobileNetV2(
-            input_shape=(224, 224, 3),
-            include_top=False,
-            weights='imagenet'
-        )
-        base_model.trainable = False
-        
-        # Add custom classifier on top
-        model = keras.Sequential([
-            base_model,
-            layers.GlobalAveragePooling2D(),
-            layers.Dropout(0.2),
-            layers.Dense(10, activation='softmax')
-        ])
+        with mlflow.start_run(run_name="phase1_transfer_learning", nested=True):
+            
+            # Log Phase 1 specific parameters
+            phase1_params = {
+                "phase": "transfer_learning",
+                "learning_rate": 0.001,
+                "trainable_layers": 0,
+                "epochs": 5,
+                "optimizer": "adam"
+            }
+            mlflow.log_params(phase1_params)
+            
+            # Use a pretrained base model
+            base_model = keras.applications.MobileNetV2(
+                input_shape=(224, 224, 3),
+                include_top=False,
+                weights='imagenet'
+            )
+            base_model.trainable = False
+            
+            # Add custom classifier on top
+            model = keras.Sequential([
+                base_model,
+                layers.GlobalAveragePooling2D(),
+                layers.Dropout(0.2),
+                layers.Dense(10, activation='softmax')
+            ])
 
-        # Compile the model
-        model.compile(
-            optimizer='adam',
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy']
-        )
+            # Compile the model
+            model.compile(
+                optimizer='adam',
+                loss='sparse_categorical_crossentropy',
+                metrics=['accuracy']
+            )
 
-        # Callbacks
-        callbacks = [
-            keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True),
-            keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=2, min_lr=1e-6),
-            keras.callbacks.ModelCheckpoint('best_model_phase1.h5', monitor='val_loss', save_best_only=True)
-        ]
+            # Callbacks
+            callbacks = [
+                keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True),
+                keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=2, min_lr=1e-6),
+                keras.callbacks.ModelCheckpoint('best_model_phase1.h5', monitor='val_loss', save_best_only=True)
+            ]
 
-        # Train Phase 1
-        history_phase1 = model.fit(
-            train_data,
-            epochs=training_params["epochs_phase1"],
-            validation_data=val_data,
-            callbacks=callbacks,
-            verbose=1
-        )
+            # Train Phase 1
+            history_phase1 = model.fit(
+                train_data,
+                epochs=phase1_params["epochs"],
+                validation_data=val_data,
+                callbacks=callbacks,
+                verbose=1
+            )
 
-        # Log Phase 1 metrics
-        final_metrics_phase1 = {
-            "phase1_train_accuracy": history_phase1.history['accuracy'][-1],
-            "phase1_val_accuracy": history_phase1.history['val_accuracy'][-1],
-            "phase1_train_loss": history_phase1.history['loss'][-1],
-            "phase1_val_loss": history_phase1.history['val_loss'][-1]
-        }
-        log_training_metrics(final_metrics_phase1)
-        
-        # Save Phase 1 model
-        model.save('cifar10_model_phase1.keras')
-        mlflow.log_artifact('cifar10_model_phase1.keras')
+            # Log Phase 1 metrics
+            final_metrics_phase1 = {
+                "train_accuracy": history_phase1.history['accuracy'][-1],
+                "val_accuracy": history_phase1.history['val_accuracy'][-1],
+                "train_loss": history_phase1.history['loss'][-1],
+                "val_loss": history_phase1.history['val_loss'][-1]
+            }
+            log_training_metrics(final_metrics_phase1)
+            
+            # Log training history for Phase 1
+            log_classification_artifacts(history_phase1, classes, "phase1_artifacts")
+            
+            # Save Phase 1 model
+            phase1_model_path = 'cifar10_model_phase1.keras'
+            model.save(phase1_model_path)
+            mlflow.log_artifact(phase1_model_path)
+            
+            print("Phase 1 (Transfer Learning) completed!")
 
-        # PHASE 2: Fine-tuning
+        # PHASE 2: Fine-tuning (Nested Run)
         print("Phase 2: Fine-tuning (Unfrozen Layers)")
-        mlflow.log_param("training_phase", "fine_tuning")
-        
-        # Unfreezing the last 50 layers of the model
-        base_model.trainable = True
-        fine_tune = 50
-        
-        # Freeze all the layers before the `fine_tune` layer
-        for layer in base_model.layers[:-fine_tune]:
-            layer.trainable = False
+        with mlflow.start_run(run_name="phase2_fine_tuning", nested=True):
+            
+            # Log Phase 2 specific parameters
+            phase2_params = {
+                "phase": "fine_tuning",
+                "learning_rate": 0.01,
+                "trainable_layers": 50,
+                "epochs": 5,
+                "optimizer": "adam"
+            }
+            mlflow.log_params(phase2_params)
+            
+            # Unfreezing the last 50 layers of the model
+            base_model.trainable = True
+            fine_tune = 50
+            
+            # Freeze all the layers before the `fine_tune` layer
+            for layer in base_model.layers[:-fine_tune]:
+                layer.trainable = False
 
-        # Recompile with lower learning rate for fine-tuning
-        model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=0.01),
-            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=False),
-            metrics=["accuracy"]
-        )
-        
-        # Train Phase 2
-        history_phase2 = model.fit(
-            train_data,
-            epochs=training_params["epochs_phase2"],
-            validation_data=val_data,
-            callbacks=callbacks,
-            verbose=1
-        )
+            # Recompile with lower learning rate for fine-tuning
+            model.compile(
+                optimizer=keras.optimizers.Adam(learning_rate=0.01),
+                loss=keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                metrics=["accuracy"]
+            )
+            
+            # Train Phase 2
+            history_phase2 = model.fit(
+                train_data,
+                epochs=phase2_params["epochs"],
+                validation_data=val_data,
+                callbacks=callbacks,
+                verbose=1
+            )
 
+            # Log Phase 2 metrics
+            final_metrics_phase2 = {
+                "train_accuracy": history_phase2.history['accuracy'][-1],
+                "val_accuracy": history_phase2.history['val_accuracy'][-1],
+                "train_loss": history_phase2.history['loss'][-1],
+                "val_loss": history_phase2.history['val_loss'][-1]
+            }
+            log_training_metrics(final_metrics_phase2)
+            
+            # Log training history for Phase 2
+            log_classification_artifacts(history_phase2, classes, "phase2_artifacts")
+            
+            print("Phase 2 (Fine-tuning) completed!")
+
+        # FINAL EVALUATION (Back in parent run)
+        print("Evaluating final model...")
+        
         # Save the final model
         final_model_path = 'cifar10_model_final_mlflow.keras'
         model.save(final_model_path)
         mlflow.log_artifact(final_model_path)
 
         # Evaluate the model
-        print("Evaluating final model...")
         test_loss, test_acc = model.evaluate(test_data)
         
         # Get comprehensive metrics
@@ -176,46 +213,29 @@ def train_classification_with_mlflow():
             y_true.extend(labels.numpy())
             y_pred.extend(np.argmax(preds, axis=1))
         
-        from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+        from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
         
         final_metrics = {
             "test_accuracy": test_acc,
             "test_loss": test_loss,
             "precision_macro": precision_score(y_true, y_pred, average='macro'),
             "recall_macro": recall_score(y_true, y_pred, average='macro'),
-            "f1_score_macro": f1_score(y_true, y_pred, average='macro'),
-            "phase2_train_accuracy": history_phase2.history['accuracy'][-1],
-            "phase2_val_accuracy": history_phase2.history['val_accuracy'][-1],
-            "phase2_train_loss": history_phase2.history['loss'][-1],
-            "phase2_val_loss": history_phase2.history['val_loss'][-1]
+            "f1_score_macro": f1_score(y_true, y_pred, average='macro')
         }
         
-        # Log final metrics
+        # Log final metrics in parent run
         log_training_metrics(final_metrics)
         
-        # Log training history artifacts
-        combined_history = type('obj', (object,), {
-            'history': {
-                'accuracy': history_phase1.history['accuracy'] + history_phase2.history['accuracy'],
-                'val_accuracy': history_phase1.history['val_accuracy'] + history_phase2.history['val_accuracy'],
-                'loss': history_phase1.history['loss'] + history_phase2.history['loss'],
-                'val_loss': history_phase1.history['val_loss'] + history_phase2.history['val_loss']
-            }
-        })()
-        
-        log_classification_artifacts(combined_history, classes)
-        
         # Create and log confusion matrix
-        from sklearn.metrics import confusion_matrix
         cm = confusion_matrix(y_true, y_pred)
         plt.figure(figsize=(8, 6))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)
         plt.xlabel('Predicted')
         plt.ylabel('True')
-        plt.title('Confusion Matrix')
+        plt.title('Confusion Matrix - Final Model')
         plt.tight_layout()
-        plt.savefig('confusion_matrix.png')
-        mlflow.log_artifact('confusion_matrix.png')
+        plt.savefig('confusion_matrix_final.png')
+        mlflow.log_artifact('confusion_matrix_final.png')
         plt.close()
         
         # Log sample predictions
@@ -235,18 +255,18 @@ def train_classification_with_mlflow():
             plt.title(f"True: {true_cls}\nPred: {pred_cls}", color=color, fontsize=8)
             plt.axis("off")
         plt.tight_layout()
-        plt.savefig('sample_predictions.png')
-        mlflow.log_artifact('sample_predictions.png')
+        plt.savefig('sample_predictions_final.png')
+        mlflow.log_artifact('sample_predictions_final.png')
         plt.close()
 
-        # Register the model
+        # Register the final model
         if ws:
             registry = ModelRegistry(ws)
             registry.register_classification_model(
                 final_model_path,
                 mlflow.active_run().info.run_id,
                 final_metrics,
-                "CIFAR-10 Classification Model - MobileNetV2 with Fine-tuning"
+                "CIFAR-10 Classification Model - MobileNetV2 with Fine-tuning (Nested Runs)"
             )
         
         print("Classification training completed with MLflow tracking!")
