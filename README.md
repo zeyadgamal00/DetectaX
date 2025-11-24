@@ -119,6 +119,8 @@ streamlit run app.py
 Below is a standard directory layout for a Streamlit ML project:
 Folder PATH listing for volume Work SD
 Volume serial number is F0AF-0600
+
+```bash
 G:.
 ¦   .gitignore
 ¦   DEPI Project Proposal.pdf
@@ -254,7 +256,8 @@ G:.
             Model Summary.png
             Model Training (20 Epochs) (Notebook).png
             sample_predictions_final.png
-            
+```
+
 ## Results & Performance
 1. Classification (ResNet50)
 - Accuracy: e.g., 91.3%
