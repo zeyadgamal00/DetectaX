@@ -116,9 +116,7 @@ streamlit run app.py
 ```
 
 ## Directory Structure
-Below is a standard directory layout for a Streamlit ML project:
-Folder PATH listing for volume Work SD
-Volume serial number is F0AF-0600
+- Below is a standard directory layout for a Streamlit ML project:
 
 ```bash
 G:.
