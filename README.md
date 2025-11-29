@@ -37,10 +37,10 @@ This project is designed for **researchers, automotive analytics teams, ML stude
 | Category | Technologies |
 |---------|--------------|
 | **Frontend** | Streamlit |
-| **Deep Learning** | ResNet50 (Image Classification), YOLO 12X (Object Detection) |
+| **Deep Learning** | MobileNetV2 (Image Classification), YOLO 12X (Object Detection) |
 | **Computer Vision** | OpenCV |
 | **Core Python Libraries** | NumPy, Pandas, Pillow |
-| **Model Serving / Utils** | TensorFlow or PyTorch (depending on your implementation) |
+| **Model Serving / Utils** | TensorFlow & PyTorch |
 | **Deployment** | Local machine or cloud (Streamlit Cloud, Azure, GCP, etc.) |
 
 ---
