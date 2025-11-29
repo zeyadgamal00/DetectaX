@@ -13,7 +13,7 @@ def preprocess_image(image, target_size=(32, 32)):
     Args:
         image: PIL Image object
         target_size: Target size for resizing (tuple)
-                     (*** تم التعديل هنا ليصبح 32x32 افتراضياً ***)
+                     (*** Updated default size to 32x32 ***)
     Returns:
         numpy array: Preprocessed image
     """
@@ -44,7 +44,7 @@ def normalize_image(image_array, mean=None, std=None):
 def prepare_for_classification(image, model_type='default'):
     """
     Prepare image for classification model
-    (*** تم تعديل target_size هنا أيضاً ***)
+    (*** Updated target_size to 32x32 ***)
     """
 
     processed = preprocess_image(image, target_size=(32, 32))
@@ -61,7 +61,8 @@ def prepare_for_detection(image, model_type='default'):
     processed = preprocess_image(image, target_size=(416, 416))
 
     if model_type == 'yolo':
-        processed = processed[..., ::-1]
+        processed = processed[..., ::-1]         # Convert RGB → BGR if needed
+
     processed = np.expand_dims(processed, axis=0)
 
     return processed

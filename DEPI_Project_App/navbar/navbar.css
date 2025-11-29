@@ -1,4 +1,3 @@
-
 .glass-navbar {
     position: fixed;
     top: 0;
@@ -46,8 +45,60 @@
     font-size: 1rem;
     font-weight: 400;
     transition: color 0.3s ease;
+    position: relative;
 }
 
 .navbar-links a:hover {
     color: #00CCFF;
+}
+
+
+.badge-new {
+    position: absolute;
+
+
+    top: -12px;
+    left: -20px;
+
+    /* الألوان والمظهر */
+    background: #00CCFF;
+    color: #020c1a;
+
+
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1;
+
+
+    clip-path: polygon(
+        15% 0, 100% 0,
+        100% 70%, 85% 100%,
+        0 100%, 0 30%
+    );
+
+    padding: 3px 8px;
+    border-radius: 0;
+
+
+    pointer-events: none;
+
+
+    animation: pulse-tech 2s infinite ease-in-out;
+}
+
+
+@keyframes pulse-tech {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px rgba(0, 204, 255, 0.6));
+    }
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 6px rgba(0, 204, 255, 1));
+    }
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px rgba(0, 204, 255, 0.6));
+    }
 }

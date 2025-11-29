@@ -188,9 +188,7 @@ def main():
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("""
         <ul class="tech-list">
-            <li><b>Real-time Video Analysis:</b> Add support for webcam and video file detection.</li>
             <li><b>Model Expansion:</b> Integrate Image Segmentation and other advanced tasks.</li>
-            <li><b>Batch Processing:</b> Allow users to upload and analyze multiple images at once.</li>
             <li><b>User Accounts:</b> Implement a system for users to save and manage their results.</li>
             <li><b>Advanced MLOps:</b> Full CI/CD pipelines for automatic model retraining.</li>
         </ul>
@@ -245,7 +243,7 @@ def main():
 
         st.markdown(create_team_card(
             "Basel Mohamed Mostafa",
-            "Object Detection Model Implementation & Evaluation",
+            "Image Classification Model & MLOps",
             "Basel Mohamed Mostafa.png",
             linkedin_url="https://www.linkedin.com/in/basel-sayed-b11534243/",
             github_url="https://github.com/BaselMohamed802"
@@ -254,7 +252,7 @@ def main():
     with col2:
         st.markdown(create_team_card(
             "Abdelrahman Kamal Elkhabery",
-            "Image Classification Model & Transfer Learning",
+            "Project Documentation Lead & Transfer Learning",
             "Abdelrahman Kamal Elkhabery.png",
             linkedin_url="https://www.linkedin.com/in/abdelrahman-kamal-577b09312?utm_source=share_via&utm_content=profile&utm_medium=member_android",
             github_url="https://github.com/Abdelrahman5t"
@@ -262,7 +260,7 @@ def main():
 
         st.markdown(create_team_card(
             "Mohamed Hamada Farghali",
-            "MLOps, Monitoring & Retraining Strategy",
+            "Object Detection Model Implementation & Evaluation",
             "Mohamed Hamada Farghali.jpg",
             linkedin_url="http://linkedin.com/in/mohamed-elfouly-14ab612a5",
             github_url="https://github.com/melfouly903"
@@ -279,3 +277,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

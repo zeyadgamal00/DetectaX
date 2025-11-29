@@ -10,11 +10,11 @@ try:
 except ImportError:
     CLASS_NAMES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
-CNN_ENDPOINT = "YOUR_CNN_ENDPOINT_HERE"
-CNN_KEY = "YOUR_CNN_API_KEY_HERE"
+CNN_ENDPOINT = "############"
+CNN_KEY = "############"
 
-OD_ENDPOINT = "YOUR_OD_ENDPOINT_HERE"
-OD_KEY = "YOUR_OD_API_KEY_HERE"
+OD_ENDPOINT = "############"
+OD_KEY = "############"
 
 def _pil_to_base64(image: Image.Image, format="PNG") -> str:
     try:

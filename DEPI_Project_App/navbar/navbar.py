@@ -1,4 +1,3 @@
-# navbar/navbar.py
 import streamlit as st
 import os
 
@@ -32,6 +31,8 @@ def render_navbar():
             <a href="/" target="_self">Home</a> 
             <a href="/Image_Classification" target="_self">Classification</a>
             <a href="/Object_Detection" target="_self">Detection</a>
+            <a href="/Realtime_Detection" target="_self" class="rtd-link">RTD <span class="badge-new">BETA</span></a>
         </div>
+
     </div>
     """, unsafe_allow_html=True)
