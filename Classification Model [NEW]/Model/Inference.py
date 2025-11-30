@@ -193,15 +193,18 @@ class CarClassifierInference:
                 'make': {
                     'id': make_original,
                     'name': make_name,
+                    'display_name': f"{make_name} - {make_original}",  # ← NEW: Combined display
                     'confidence': make_confidence
                 },
                 'model': {
                     'id': model_original,
                     'name': model_name,
+                    'display_name': f"{model_name} - {model_original}",  # ← NEW: Combined display
                     'confidence': model_confidence
                 },
                 'year': {
                     'id': year_original,
+                    'display_name': f"{year_original}",  # Year doesn't need a name
                     'confidence': year_confidence
                 },
                 'image_path': image_path,
@@ -251,11 +254,6 @@ class CarClassifierInference:
     def visualize_single_prediction(self, image_path: str, result: Dict = None, save_path: Optional[str] = None):
         """
         Visualize prediction for a single image.
-        
-        Args:
-            image_path: Path to the image
-            result: Prediction result (if None, will run prediction)
-            save_path: Optional path to save the visualization
         """
         if result is None:
             result = self.predict_single_image(image_path)
@@ -280,11 +278,11 @@ class CarClassifierInference:
         ax2.text(0.1, 0.9, 'Car Classification Results', fontsize=16, fontweight='bold', 
                 transform=ax2.transAxes, verticalalignment='top')
         
-        # Prediction details
+        # Prediction details - NOW SHOWING BOTH NAME AND NUMBER
         details = [
-            f"🏭 Make: {result['make']['name']} ({result['make']['confidence']:.1%})",
-            f"📱 Model: {result['model']['name']} ({result['model']['confidence']:.1%})", 
-            f"📅 Year: {result['year']['id']} ({result['year']['confidence']:.1%})",
+            f"🏭 Make: {result['make']['display_name']} ({result['make']['confidence']:.1%})",
+            f"📱 Model: {result['model']['display_name']} ({result['model']['confidence']:.1%})", 
+            f"📅 Year: {result['year']['display_name']} ({result['year']['confidence']:.1%})",
             f"📊 Overall Confidence: {(result['make']['confidence'] + result['model']['confidence'] + result['year']['confidence']) / 3:.1%}"
         ]
         
@@ -300,15 +298,15 @@ class CarClassifierInference:
         
         plt.show()
         
-        # Print results to console
-        print("\n" + "="*50)
+        # Print enhanced results to console - SHOWING BOTH NAME AND NUMBER
+        print("\n" + "="*60)
         print("PREDICTION RESULTS:")
-        print("="*50)
-        print(f"Make: {result['make']['name']} (confidence: {result['make']['confidence']:.3f})")
-        print(f"Model: {result['model']['name']} (confidence: {result['model']['confidence']:.3f})")
-        print(f"Year: {result['year']['id']} (confidence: {result['year']['confidence']:.3f})")
-        print(f"Overall: {(result['make']['confidence'] + result['model']['confidence'] + result['year']['confidence']) / 3:.3f}")
-        print("="*50)
+        print("="*60)
+        print(f"Make: {result['make']['display_name']} (confidence: {result['make']['confidence']:.3f})")
+        print(f"Model: {result['model']['display_name']} (confidence: {result['model']['confidence']:.3f})")
+        print(f"Year: {result['year']['display_name']} (confidence: {result['year']['confidence']:.3f})")
+        print(f"Overall Confidence: {(result['make']['confidence'] + result['model']['confidence'] + result['year']['confidence']) / 3:.3f}")
+        print("="*60)
     
     def visualize_folder_predictions(self, results: List[Dict], max_display: int = 12, save_path: Optional[str] = None):
         """
